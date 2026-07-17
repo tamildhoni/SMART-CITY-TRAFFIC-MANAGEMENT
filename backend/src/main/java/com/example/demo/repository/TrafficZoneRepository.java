@@ -1,6 +1,5 @@
 package com.example.demo.repository;
 
-import com.example.demo.entity.CongestionLevel;
 import com.example.demo.entity.TrafficZone;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,5 +17,5 @@ public interface TrafficZoneRepository extends JpaRepository<TrafficZone, Long> 
     List<TrafficZone> findHighlyCongestedZones();
     
     @Query("SELECT z FROM TrafficZone z WHERE z.currentCongestionLevel = :level")
-    List<TrafficZone> findByCongestionLevel(@Param("level") CongestionLevel level);
+    List<TrafficZone> findByCongestionLevel(@Param("level") TrafficZone.CongestionLevel level);
 }
