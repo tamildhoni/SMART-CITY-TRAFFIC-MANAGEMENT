@@ -1,6 +1,5 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.IncidentDto;
 import com.example.demo.entity.*;
 import com.example.demo.repository.TrafficIncidentRepository;
 import com.example.demo.repository.TrafficZoneRepository;
@@ -29,26 +28,22 @@ public class TrafficIncidentService {
         this.alertRepository = alertRepository;
     }
     
-    public TrafficIncident reportIncident(IncidentDto dto, String username) {
-        TrafficZone zone = zoneRepository.findById(dto.getZoneId())
+    public TrafficIncident reportIncident(TrafficIncident incident, String username) {
+        TrafficZone zone = zoneRepository.findById(incident.getZone().getZoneId())
                 .orElseThrow(() -> new RuntimeException("Zone not found"));
         
         CityUser reporter = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        TrafficIncident incident = new TrafficIncident();
-        incident.setTitle(dto.getTitle());
-        incident.setIncidentType(IncidentType.valueOf(dto.getIncidentType()));
-        incident.setSeverity(Severity.valueOf(dto.getSeverity()));
         incident.setZone(zone);
         incident.setReportedBy(reporter);
-        incident.setDescription(dto.getDescription());
-        incident.setStatus(IncidentStatus.REPORTED);
+        incident.setStatus(TrafficIncident.IncidentStatus.REPORTED);
         
         TrafficIncident saved = incidentRepository.save(incident);
         
         // Create alert for HIGH or CRITICAL severity
-        if (incident.getSeverity() == Severity.HIGH || incident.getSeverity() == Severity.CRITICAL) {
+        if (incident.getSeverity() == TrafficIncident.Severity.HIGH || 
+            incident.getSeverity() == TrafficIncident.Severity.CRITICAL) {
             AlertNotification alert = new AlertNotification();
             alert.setTargetRole(Role.TRAFFIC_CONTROLLER);
             alert.setMessage("High severity incident reported: " + incident.getTitle());
@@ -65,11 +60,11 @@ public class TrafficIncidentService {
         TrafficIncident incident = incidentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Incident not found"));
         
-        if (incident.getStatus() != IncidentStatus.REPORTED) {
+        if (incident.getStatus() != TrafficIncident.IncidentStatus.REPORTED) {
             throw new IllegalStateException("Incident must be in REPORTED state to dispatch");
         }
         
-        incident.setStatus(IncidentStatus.DISPATCHED);
+        incident.setStatus(TrafficIncident.IncidentStatus.DISPATCHED);
         return incidentRepository.save(incident);
     }
     
@@ -82,15 +77,15 @@ public class TrafficIncidentService {
                 .orElseThrow(() -> new RuntimeException("TrafficIncident not found"));
     }
     
-    public TrafficIncident updateIncident(Long id, IncidentDto dto) {
+    public TrafficIncident updateIncident(Long id, TrafficIncident incidentDetails) {
         TrafficIncident incident = getIncidentById(id);
-        incident.setTitle(dto.getTitle());
-        incident.setIncidentType(IncidentType.valueOf(dto.getIncidentType()));
-        incident.setSeverity(Severity.valueOf(dto.getSeverity()));
-        incident.setDescription(dto.getDescription());
+        incident.setTitle(incidentDetails.getTitle());
+        incident.setIncidentType(incidentDetails.getIncidentType());
+        incident.setSeverity(incidentDetails.getSeverity());
+        incident.setDescription(incidentDetails.getDescription());
         
-        if (dto.getZoneId() != null) {
-            TrafficZone zone = zoneRepository.findById(dto.getZoneId())
+        if (incidentDetails.getZone() != null && incidentDetails.getZone().getZoneId() != null) {
+            TrafficZone zone = zoneRepository.findById(incidentDetails.getZone().getZoneId())
                     .orElseThrow(() -> new RuntimeException("Zone not found"));
             incident.setZone(zone);
         }
