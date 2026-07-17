@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.FieldObservation;
-import com.example.demo.service.FieldObservationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,7 +14,6 @@ import java.util.List;
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 public class FieldObservationController {
     
-    private final FieldObservationService observationService;
     
     public FieldObservationController(FieldObservationService observationService) {
         this.observationService = observationService;
