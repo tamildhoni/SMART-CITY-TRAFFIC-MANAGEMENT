@@ -1,6 +1,5 @@
-package com.example.demo.config;
+package com.example.demo.security;
 
-import com.example.demo.config.ApplicationConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
