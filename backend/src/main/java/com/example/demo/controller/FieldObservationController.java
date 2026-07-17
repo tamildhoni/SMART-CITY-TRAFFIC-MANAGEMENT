@@ -1,63 +1,58 @@
-package com.example.demo.controller;
+package com.example.demo.service;
 
+import com.example.demo.entity.CityUser;
 import com.example.demo.entity.FieldObservation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import com.example.demo.repository.FieldObservationRepository;
+import com.example.demo.repository.CityUserRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/observations")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
-public class FieldObservationController {
+@Service
+@Transactional
+public class FieldObservationService {
     
+    private final FieldObservationRepository observationRepository;
+    private final CityUserRepository userRepository;
     
-    public FieldObservationController(FieldObservationService observationService) {
-        this.observationService = observationService;
+    public FieldObservationService(FieldObservationRepository observationRepository,
+                                   CityUserRepository userRepository) {
+        this.observationRepository = observationRepository;
+        this.userRepository = userRepository;
     }
     
-    @GetMapping
-    public ResponseEntity<List<FieldObservation>> getAllObservations() {
-        List<FieldObservation> observations = observationService.getAllObservations();
-        return ResponseEntity.ok(observations);
+    public List<FieldObservation> getAllObservations() {
+        return observationRepository.findAll();
     }
     
-    @GetMapping("/{id}")
-    public ResponseEntity<FieldObservation> getObservationById(@PathVariable Long id) {
-        FieldObservation observation = observationService.getObservationById(id);
-        return ResponseEntity.ok(observation);
+    public FieldObservation getObservationById(Long id) {
+        return observationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("FieldObservation not found"));
     }
     
-    @GetMapping("/zone/{zoneId}")
-    public ResponseEntity<List<FieldObservation>> getObservationsByZone(@PathVariable Long zoneId) {
-        List<FieldObservation> observations = observationService.getObservationsByZone(zoneId);
-        return ResponseEntity.ok(observations);
+    public List<FieldObservation> getObservationsByZone(Long zoneId) {
+        return observationRepository.findByZone_ZoneId(zoneId);
     }
     
-    @PostMapping
-    @PreAuthorize("hasAnyRole('FIELD_TECHNICIAN', 'TRAFFIC_CONTROLLER', 'CITY_ADMINISTRATOR')")
-    public ResponseEntity<FieldObservation> createObservation(@RequestBody FieldObservation observation, 
-                                                              Authentication authentication) {
-        String username = authentication.getName();
-        FieldObservation created = observationService.createObservation(observation, username);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    public FieldObservation createObservation(FieldObservation observation, String username) {
+        CityUser user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        observation.setReportedBy(user);
+        return observationRepository.save(observation);
     }
     
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('FIELD_TECHNICIAN', 'TRAFFIC_CONTROLLER', 'CITY_ADMINISTRATOR')")
-    public ResponseEntity<FieldObservation> updateObservation(@PathVariable Long id, 
-                                                              @RequestBody FieldObservation observation) {
-        FieldObservation updated = observationService.updateObservation(id, observation);
-        return ResponseEntity.ok(updated);
+    public FieldObservation updateObservation(Long id, FieldObservation observation) {
+        FieldObservation existing = getObservationById(id);
+        existing.setTitle(observation.getTitle());
+        existing.setDescription(observation.getDescription());
+        existing.setLocation(observation.getLocation());
+        existing.setZone(observation.getZone());
+        existing.setImageUrl(observation.getImageUrl());
+        return observationRepository.save(existing);
     }
     
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('CITY_ADMINISTRATOR', 'FIELD_TECHNICIAN')")
-    public ResponseEntity<String> deleteObservation(@PathVariable Long id) {
-        observationService.deleteObservation(id);
-        return ResponseEntity.ok("FieldObservation deleted successfully");
+    public void deleteObservation(Long id) {
+        observationRepository.deleteById(id);
     }
 }
