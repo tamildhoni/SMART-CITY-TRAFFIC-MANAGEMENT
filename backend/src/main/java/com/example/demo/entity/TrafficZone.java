@@ -25,4 +25,12 @@ public class TrafficZone {
     private CongestionLevel currentCongestionLevel = CongestionLevel.LOW;
     
     private Integer signalCycleSeconds = 60;
+    
+    // Inner enum for congestion levels
+    public enum CongestionLevel {
+        LOW,
+        MODERATE,
+        HIGH,
+        CRITICAL
+    }
 }
