@@ -31,7 +31,7 @@ public class UtilityOutage {
     private OutageStatus status = OutageStatus.ACTIVE;
     
     @Enumerated(EnumType.STRING)
-    private Severity severity;
+    private TrafficIncident.Severity severity;
     
     private String description;
     

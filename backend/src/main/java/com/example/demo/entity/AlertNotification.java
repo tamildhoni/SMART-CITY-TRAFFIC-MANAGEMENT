@@ -26,7 +26,7 @@ public class AlertNotification {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Severity severity;
+    private TrafficIncident.Severity severity;
     
     private boolean isRead = false;
 }
