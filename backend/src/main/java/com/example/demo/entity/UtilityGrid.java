@@ -31,19 +31,11 @@ public class UtilityGrid {
     @Enumerated(EnumType.STRING)
     private GridStatus status = GridStatus.OPERATIONAL;
     
-    // Inner enum for grid types
     public enum GridType {
-        ELECTRICITY,
-        WATER,
-        GAS,
-        SEWAGE,
-        TELECOM
+        ELECTRICITY, WATER, GAS, SEWAGE, TELECOM
     }
     
-    // Inner enum for grid status
     public enum GridStatus {
-        OPERATIONAL,
-        DEGRADED,
-        OFFLINE
+        OPERATIONAL, DEGRADED, OFFLINE
     }
 }

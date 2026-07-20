@@ -26,11 +26,7 @@ public class TrafficZone {
     
     private Integer signalCycleSeconds = 60;
     
-    // Inner enum for congestion levels
     public enum CongestionLevel {
-        LOW,
-        MODERATE,
-        HIGH,
-        CRITICAL
+        LOW, MODERATE, HIGH, CRITICAL
     }
 }

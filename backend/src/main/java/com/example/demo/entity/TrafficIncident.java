@@ -41,29 +41,15 @@ public class TrafficIncident {
     
     private String description;
     
-    // Inner enum for incident types
     public enum IncidentType {
-        ACCIDENT,
-        ROAD_CLOSURE,
-        TRAFFIC_JAM,
-        CONSTRUCTION,
-        WEATHER,
-        OTHER
+        ACCIDENT, ROAD_CLOSURE, TRAFFIC_JAM, CONSTRUCTION, WEATHER, OTHER
     }
     
-    // Inner enum for severity levels
     public enum Severity {
-        LOW,
-        MEDIUM,
-        HIGH,
-        CRITICAL
+        LOW, MEDIUM, HIGH, CRITICAL
     }
     
-    // Inner enum for incident status
     public enum IncidentStatus {
-        REPORTED,
-        DISPATCHED,
-        RESOLVED,
-        CLOSED
+        REPORTED, DISPATCHED, RESOLVED, CLOSED
     }
 }
