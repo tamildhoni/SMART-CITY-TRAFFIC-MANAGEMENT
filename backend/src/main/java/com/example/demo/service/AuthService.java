@@ -6,7 +6,7 @@ import com.example.demo.dto.RegisterDto;
 import com.example.demo.entity.CityUser;
 import com.example.demo.entity.Role;
 import com.example.demo.repository.CityUserRepository;
-import com.example.demo.security.JwtService;
+import com.example.demo.config.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
