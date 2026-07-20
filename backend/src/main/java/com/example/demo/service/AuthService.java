@@ -6,7 +6,7 @@ import com.example.demo.dto.RegisterDto;
 import com.example.demo.entity.CityUser;
 import com.example.demo.entity.Role;
 import com.example.demo.repository.CityUserRepository;
-import com.example.demo.security.JwtUtil;
+import com.example.demo.security.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,14 +17,14 @@ import org.springframework.stereotype.Service;
 public class AuthService {
     private final CityUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     
     public AuthService(CityUserRepository userRepository, PasswordEncoder passwordEncoder, 
-                       JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
+                       JwtService jwtService, AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
+        this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
     }
     
@@ -44,7 +44,7 @@ public class AuthService {
         
         userRepository.save(user);
         
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
+        String token = jwtService.generateToken(user.getUsername(), user.getRole().name());
         return new AuthResponseDto(token, user.getUsername(), user.getRole().name());
     }
     
@@ -56,7 +56,7 @@ public class AuthService {
         CityUser user = userRepository.findByUsername(dto.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
+        String token = jwtService.generateToken(user.getUsername(), user.getRole().name());
         return new AuthResponseDto(token, user.getUsername(), user.getRole().name());
     }
 }
