@@ -35,18 +35,11 @@ public class UtilityOutage {
     
     private String description;
     
-    // Inner enum for outage types
     public enum OutageType {
-        PLANNED,
-        UNPLANNED,
-        EMERGENCY,
-        MAINTENANCE
+        PLANNED, UNPLANNED, EMERGENCY, MAINTENANCE
     }
     
-    // Inner enum for outage status
     public enum OutageStatus {
-        ACTIVE,
-        RESOLVED,
-        RESTORED
+        ACTIVE, RESOLVED, RESTORED
     }
 }
