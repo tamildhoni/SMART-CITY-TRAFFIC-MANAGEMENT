@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -40,6 +41,7 @@ public class UtilityGridController {
     @PostMapping("/{id}/outages")
     @PreAuthorize("hasRole('UTILITY_SUPERVISOR')")
     public ResponseEntity<UtilityOutage> registerOutage(@PathVariable Long id, @RequestBody UtilityOutage outage) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(gridService.registerOutage(id, outage));
+        UtilityOutage createdOutage = gridService.registerOutage(id, outage);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOutage);
     }
 }

@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.OutageDto;
-import com.example.demo.entity.*;
+import com.example.demo.entity.UtilityGrid;
+import com.example.demo.entity.UtilityOutage;
 import com.example.demo.repository.UtilityGridRepository;
 import com.example.demo.repository.UtilityOutageRepository;
 import org.springframework.stereotype.Service;
@@ -26,30 +26,24 @@ public class UtilityGridService {
         
         grid.setCurrentLoad(newLoad);
         
-        // Auto-transition to DEGRADED if load exceeds 90% capacity
         if (newLoad > grid.getCapacityUnits() * 0.9) {
-            grid.setStatus(GridStatus.DEGRADED);
-        } else if (grid.getStatus() == GridStatus.DEGRADED && newLoad <= grid.getCapacityUnits() * 0.9) {
-            grid.setStatus(GridStatus.OPERATIONAL);
+            grid.setStatus(UtilityGrid.GridStatus.DEGRADED);
+        } else if (grid.getStatus() == UtilityGrid.GridStatus.DEGRADED && newLoad <= grid.getCapacityUnits() * 0.9) {
+            grid.setStatus(UtilityGrid.GridStatus.OPERATIONAL);
         }
         
         gridRepository.save(grid);
     }
     
-    public UtilityOutage registerOutage(Long gridId, OutageDto dto) {
+    public UtilityOutage registerOutage(Long gridId, UtilityOutage outage) {
         UtilityGrid grid = gridRepository.findById(gridId)
                 .orElseThrow(() -> new RuntimeException("Grid not found"));
         
-        // Update grid status to DEGRADED
-        grid.setStatus(GridStatus.DEGRADED);
+        grid.setStatus(UtilityGrid.GridStatus.DEGRADED);
         gridRepository.save(grid);
         
-        UtilityOutage outage = new UtilityOutage();
         outage.setGrid(grid);
-        outage.setOutageType(OutageType.valueOf(dto.getOutageType()));
-        outage.setAffectedArea(dto.getPerformanceType());
-        outage.setSeverity(Severity.valueOf(dto.getSeverity()));
-        outage.setDescription(dto.getDescription());
+        outage.setStatus(UtilityOutage.OutageStatus.ACTIVE);
         
         return outageRepository.save(outage);
     }
