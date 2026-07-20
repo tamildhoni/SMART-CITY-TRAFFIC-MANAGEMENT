@@ -5,7 +5,6 @@ import com.example.demo.service.TrafficZoneService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -21,20 +20,17 @@ public class TrafficZoneController {
     
     @GetMapping
     public ResponseEntity<List<TrafficZone>> getAllZones() {
-        List<TrafficZone> zones = zoneService.getAllZones();
-        return ResponseEntity.ok(zones);
+        return ResponseEntity.ok(zoneService.getAllZones());
     }
     
     @GetMapping("/{id}")
     public ResponseEntity<TrafficZone> getZoneById(@PathVariable Long id) {
-        TrafficZone zone = zoneService.getZoneById(id);
-        return ResponseEntity.ok(zone);
+        return ResponseEntity.ok(zoneService.getZoneById(id));
     }
     
     @GetMapping("/congested")
     public ResponseEntity<List<TrafficZone>> getHighlyCongestedZones() {
-        List<TrafficZone> zones = zoneService.getHighlyCongestedZones();
-        return ResponseEntity.ok(zones);
+        return ResponseEntity.ok(zoneService.getHighlyCongestedZones());
     }
     
     @DeleteMapping("/{id}")

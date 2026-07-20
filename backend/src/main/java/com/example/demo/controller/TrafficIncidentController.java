@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -23,23 +22,19 @@ public class TrafficIncidentController {
     
     @GetMapping
     public ResponseEntity<List<TrafficIncident>> getAllIncidents() {
-        List<TrafficIncident> incidents = incidentService.getAllIncidents();
-        return ResponseEntity.ok(incidents);
+        return ResponseEntity.ok(incidentService.getAllIncidents());
     }
     
     @GetMapping("/{id}")
     public ResponseEntity<TrafficIncident> getIncidentById(@PathVariable Long id) {
-        TrafficIncident incident = incidentService.getIncidentById(id);
-        return ResponseEntity.ok(incident);
+        return ResponseEntity.ok(incidentService.getIncidentById(id));
     }
     
     @PostMapping
     @PreAuthorize("hasAnyRole('CITY_ADMINISTRATOR', 'TRAFFIC_CONTROLLER')")
     public ResponseEntity<String> createIncident(@RequestBody TrafficIncident incident, Authentication authentication) {
-        String username = authentication.getName();
-        incidentService.reportIncident(incident, username);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body("TrafficIncident created successfully");
+        incidentService.reportIncident(incident, authentication.getName());
+        return ResponseEntity.status(HttpStatus.CREATED).body("TrafficIncident created successfully");
     }
     
     @PutMapping("/{id}")
@@ -59,7 +54,6 @@ public class TrafficIncidentController {
     @PutMapping("/{id}/dispatch")
     @PreAuthorize("hasRole('TRAFFIC_CONTROLLER')")
     public ResponseEntity<TrafficIncident> dispatchIncident(@PathVariable Long id) {
-        TrafficIncident incident = incidentService.dispatchResponse(id);
-        return ResponseEntity.ok(incident);
+        return ResponseEntity.ok(incidentService.dispatchResponse(id));
     }
 }
