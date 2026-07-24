@@ -9,18 +9,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegisterDto {
-    @NotBlank
+    @NotBlank(message = "Username is required")
     private String username;
-    
-    @NotBlank
+    @NotBlank(message = "Password is required")
     private String password;
-    
-    @NotBlank
+    @NotBlank(message = "Full name is required")
     private String fullName;
-    
-    @NotBlank
+    @NotBlank(message = "Role is required")
     private String role;
-    
     private String district;
     private String badgeNumber;
 }

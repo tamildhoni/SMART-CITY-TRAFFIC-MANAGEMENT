@@ -9,9 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthRequestDto {
-    @NotBlank
+    @NotBlank(message = "Username is required")
     private String username;
-    
-    @NotBlank
+    @NotBlank(message = "Password is required")
     private String password;
 }
