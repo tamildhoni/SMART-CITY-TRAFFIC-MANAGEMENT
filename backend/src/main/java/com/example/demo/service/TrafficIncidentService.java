@@ -95,7 +95,7 @@ public class TrafficIncidentService {
         return incidentRepository.save(incident);
     }
     
-    public void deleteIncident(Long id) {
+    public void deleteEndpoint(Long id) {
         if (!incidentRepository.existsById(id)) {
             throw new RuntimeException("Traffic incident not found with id: " + id);
         }
