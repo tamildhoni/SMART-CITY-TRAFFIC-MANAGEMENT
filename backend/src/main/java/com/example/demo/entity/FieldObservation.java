@@ -12,19 +12,15 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "field_observations")
 public class FieldObservation {
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long observationId;
-    
     private String title;
     private String description;
     private String location;
     private String zone;
     private String imageUrl;
-    
     @ManyToOne
     private CityUser reportedBy;
-    
     private LocalDateTime reportedAt;
 }

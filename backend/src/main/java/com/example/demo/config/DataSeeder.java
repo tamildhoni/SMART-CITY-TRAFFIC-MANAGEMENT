@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
-    
     private final CityUserRepository userRepository;
     private final TrafficZoneRepository zoneRepository;
     private final UtilityGridRepository gridRepository;
@@ -18,9 +17,7 @@ public class DataSeeder implements CommandLineRunner {
     
     @Override
     public void run(String... args) {
-        // Seed Users
         if (userRepository.count() == 0) {
-            // Admin
             CityUser admin = new CityUser();
             admin.setUsername("admin");
             admin.setPasswordHash(passwordEncoder.encode("admin123"));
@@ -31,7 +28,6 @@ public class DataSeeder implements CommandLineRunner {
             admin.setActive(true);
             userRepository.save(admin);
             
-            // Traffic Controller
             CityUser controller = new CityUser();
             controller.setUsername("controller");
             controller.setPasswordHash(passwordEncoder.encode("controller123"));
@@ -42,7 +38,6 @@ public class DataSeeder implements CommandLineRunner {
             controller.setActive(true);
             userRepository.save(controller);
             
-            // Utility Supervisor
             CityUser supervisor = new CityUser();
             supervisor.setUsername("supervisor");
             supervisor.setPasswordHash(passwordEncoder.encode("supervisor123"));
@@ -54,7 +49,6 @@ public class DataSeeder implements CommandLineRunner {
             userRepository.save(supervisor);
         }
         
-        // Seed Traffic Zones
         if (zoneRepository.count() == 0) {
             TrafficZone zone1 = new TrafficZone();
             zone1.setZoneName("Downtown");
@@ -73,7 +67,6 @@ public class DataSeeder implements CommandLineRunner {
             zoneRepository.save(zone2);
         }
         
-        // Seed Utility Grids
         if (gridRepository.count() == 0) {
             UtilityGrid grid1 = new UtilityGrid();
             grid1.setGridName("Central Power Grid");
