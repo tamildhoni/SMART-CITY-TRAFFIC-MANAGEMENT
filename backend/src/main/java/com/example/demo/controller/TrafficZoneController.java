@@ -1,35 +1,43 @@
-package com.example.demo.service;
+package com.example.demo.controller;
 
 import com.example.demo.entity.TrafficZone;
-import com.example.demo.repository.TrafficZoneRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.example.demo.service.TrafficZoneService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
-@Service
-@Transactional(readOnly = true)
-public class TrafficZoneService {
-    private final TrafficZoneRepository zoneRepository;
+@RestController
+@RequestMapping("/api/zones")
+@RequiredArgsConstructor
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
+public class TrafficZoneController {
     
-    public TrafficZoneService(TrafficZoneRepository zoneRepository) {
-        this.zoneRepository = zoneRepository;
+    private final TrafficZoneService trafficZoneService;
+    
+    @GetMapping
+    public ResponseEntity<List<TrafficZone>> getAllZones() {
+        return ResponseEntity.ok(trafficZoneService.getAllZones());
     }
     
-    public List<TrafficZone> getAllZones() {
-        return zoneRepository.findAll();
+    @GetMapping("/{id}")
+    public ResponseEntity<TrafficZone> getZoneById(@PathVariable Long id) {
+        return trafficZoneService.getZoneById(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
     
-    public TrafficZone getZoneById(Long id) {
-        return zoneRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TrafficZone not found"));
+    @GetMapping("/congested")
+    public ResponseEntity<List<TrafficZone>> getHighlyCongestedZones() {
+        return ResponseEntity.ok(trafficZoneService.getHighlyCongestedZones());
     }
     
-    public List<TrafficZone> getHighlyCongestedZones() {
-        return zoneRepository.findHighlyCongestedZones();
-    }
-    
-    @Transactional
-    public void deleteZone(Long id) {
-        zoneRepository.deleteById(id);
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('CITY_ADMINISTRATOR')")
+    public ResponseEntity<String> deleteZone(@PathVariable Long id) {
+        trafficZoneService.deleteZone(id);
+        return ResponseEntity.ok("TrafficZone deleted successfully.");
     }
 }
