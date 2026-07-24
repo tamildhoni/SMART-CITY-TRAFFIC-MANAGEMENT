@@ -1,65 +1,123 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.IncidentDto;
 import com.example.demo.entity.TrafficIncident;
+import com.example.demo.entity.TrafficZone;
+import com.example.demo.entity.CityUser;
+import com.example.demo.entity.Role;
 import com.example.demo.service.TrafficIncidentService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/incidents")
-@RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
-public class TrafficIncidentController {
-    
-    private final TrafficIncidentService trafficIncidentService;
-    
-    @GetMapping
-    public ResponseEntity<List<TrafficIncident>> getAllIncidents() {
-        return ResponseEntity.ok(trafficIncidentService.getAllIncidents());
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@ExtendWith(MockitoExtension.class)
+class TrafficIncidentControllerTest {
+
+    private MockMvc mockMvc;
+
+    @Mock
+    private TrafficIncidentService trafficIncidentService;
+
+    @InjectMocks
+    private TrafficIncidentController trafficIncidentController;
+
+    private ObjectMapper objectMapper;
+    private TrafficIncident incident1;
+    private TrafficIncident incident2;
+    private TrafficZone zone;
+    private CityUser reporter;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(trafficIncidentController).build();
+        objectMapper = new ObjectMapper();
+
+        // Create test data
+        zone = new TrafficZone();
+        zone.setZoneId(1L);
+        zone.setZoneName("Downtown");
+        zone.setZoneCode("DT001");
+
+        reporter = new CityUser();
+        reporter.setUserId(1L);
+        reporter.setUsername("testUser");
+        reporter.setRole(Role.TRAFFIC_CONTROLLER);
+
+        incident1 = new TrafficIncident();
+        incident1.setIncidentId(1L);
+        incident1.setTitle("Accident on Main St");
+        incident1.setIncidentType(TrafficIncident.IncidentType.ACCIDENT);
+        incident1.setSeverity(TrafficIncident.Severity.HIGH);
+        incident1.setStatus(TrafficIncident.IncidentStatus.REPORTED);
+        incident1.setZone(zone);
+        incident1.setReportedBy(reporter);
+        incident1.setReportedAt(LocalDateTime.now());
+
+        incident2 = new TrafficIncident();
+        incident2.setIncidentId(2L);
+        incident2.setTitle("Traffic Jam on Highway");
+        incident2.setIncidentType(TrafficIncident.IncidentType.TRAFFIC_JAM);
+        incident2.setSeverity(TrafficIncident.Severity.MEDIUM);
+        incident2.setStatus(TrafficIncident.IncidentStatus.DISPATCHED);
+        incident2.setZone(zone);
+        incident2.setReportedBy(reporter);
+        incident2.setReportedAt(LocalDateTime.now());
     }
-    
-    @GetMapping("/{id}")
-    public ResponseEntity<TrafficIncident> getIncidentById(@PathVariable Long id) {
-        return ResponseEntity.ok(trafficIncidentService.getIncidentById(id));
+
+    @Test
+    void testGetAllIncidents_ShouldReturnListOfIncidents() throws Exception {
+        // Arrange
+        List<TrafficIncident> incidents = Arrays.asList(incident1, incident2);
+        when(trafficIncidentService.getAllIncidents()).thenReturn(incidents);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/incidents")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].incidentId").value(1L))
+                .andExpect(jsonPath("$[0].title").value("Accident on Main St"))
+                .andExpect(jsonPath("$[1].incidentId").value(2L))
+                .andExpect(jsonPath("$[1].title").value("Traffic Jam on Highway"));
     }
-    
-    @PostMapping
-    @PreAuthorize("hasAnyRole('CITY_ADMINISTRATOR', 'TRAFFIC_CONTROLLER')")
-    public ResponseEntity<String> createIncident(@Valid @RequestBody IncidentDto incidentDto) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        
-        trafficIncidentService.reportIncident(incidentDto, username);
-        return ResponseEntity.status(HttpStatus.CREATED).body("TrafficIncident created successfully.");
+
+    @Test
+    void testGetAllIncidents_ShouldReturnEmptyListWhenNoIncidents() throws Exception {
+        // Arrange
+        when(trafficIncidentService.getAllIncidents()).thenReturn(Arrays.asList());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/incidents")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(0));
     }
-    
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('CITY_ADMINISTRATOR', 'TRAFFIC_CONTROLLER')")
-    public ResponseEntity<String> updateIncident(@PathVariable Long id, @Valid @RequestBody IncidentDto incidentDto) {
-        trafficIncidentService.updateIncident(id, incidentDto);
-        return ResponseEntity.ok("TrafficIncident updated successfully.");
-    }
-    
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('CITY_ADMINISTRATOR')")
-    public ResponseEntity<String> deleteIncident(@PathVariable Long id) {
-        trafficIncidentService.deleteIncident(id);
-        return ResponseEntity.ok("TrafficIncident deleted successfully.");
-    }
-    
-    @PutMapping("/{id}/dispatch")
-    @PreAuthorize("hasRole('TRAFFIC_CONTROLLER')")
-    public ResponseEntity<TrafficIncident> dispatchIncident(@PathVariable Long id) {
-        TrafficIncident updatedIncident = trafficIncidentService.dispatchResponse(id);
-        return ResponseEntity.ok(updatedIncident);
+
+    @Test
+    void testGetAllIncidents_ShouldReturnCorrectResponseContentType() throws Exception {
+        // Arrange
+        List<TrafficIncident> incidents = Arrays.asList(incident1);
+        when(trafficIncidentService.getAllIncidents()).thenReturn(incidents);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/incidents"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 }

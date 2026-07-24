@@ -1,72 +1,125 @@
 package com.example.demo.config;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.function.Function;
+import java.util.ArrayList;
 
-@Service
-public class JwtService {
-    
-    @Value("${metromind.jwt.secret}")
-    private String secret;
-    
-    @Value("${metromind.jwt.expiration.ms}")
-    private Long expirationMs;
-    
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+class JwtServiceTest {
+
+    private JwtService jwtService;
+
+    @BeforeEach
+    void setUp() {
+        jwtService = new JwtService();
+        // Set test values
+        ReflectionTestUtils.setField(jwtService, "secretKey", "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970");
+        ReflectionTestUtils.setField(jwtService, "expirationMs", 86400000L); // 24 hours
     }
-    
-    public String generateToken(String username, String role) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expirationMs);
+
+    @Test
+    void testGenerateToken_WithUsernameAndRole() {
+        // Arrange
+        String username = "testUser";
+        String role = "TRAFFIC_CONTROLLER";
+
+        // Act
+        String token = jwtService.generateToken(username, role);
+
+        // Assert
+        assertNotNull(token);
+        assertTrue(token.split("\\.").length == 3); // JWT has 3 parts
+        assertEquals(username, jwtService.extractUsername(token));
+        assertTrue(jwtService.isTokenValid(token, createUserDetails(username)));
+    }
+
+    @Test
+    void testGenerateToken_WithUserDetails() {
+        // Arrange
+        UserDetails userDetails = User.builder()
+                .username("adminUser")
+                .password("password")
+                .roles("CITY_ADMINISTRATOR")
+                .build();
+
+        // Act
+        String token = jwtService.generateToken(userDetails);
+
+        // Assert
+        assertNotNull(token);
+        assertEquals("adminUser", jwtService.extractUsername(token));
+        assertTrue(jwtService.isTokenValid(token, userDetails));
+    }
+
+    @Test
+    void testGenerateToken_TokenContainsRoleClaim() {
+        // Arrange
+        String username = "controllerUser";
+        String role = "UTILITY_SUPERVISOR";
+
+        // Act
+        String token = jwtService.generateToken(username, role);
+
+        // Assert
+        assertNotNull(token);
+        String extractedUsername = jwtService.extractUsername(token);
+        assertEquals(username, extractedUsername);
         
-        return Jwts.builder()
-                .setSubject(username)
-                .claim("role", role)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(getSigningKey())
-                .compact();
+        // Verify token is valid for user
+        UserDetails userDetails = createUserDetails(username);
+        assertTrue(jwtService.isTokenValid(token, userDetails));
     }
-    
-    public Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+
+    @Test
+    void testGenerateToken_TokenExpiration() throws InterruptedException {
+        // Arrange
+        ReflectionTestUtils.setField(jwtService, "expirationMs", 100L); // 100ms expiration
+        String username = "expiringUser";
+        String role = "TRAFFIC_CONTROLLER";
+
+        // Act
+        String token = jwtService.generateToken(username, role);
+        Thread.sleep(200); // Wait for token to expire
+
+        // Assert
+        UserDetails userDetails = createUserDetails(username);
+        assertFalse(jwtService.isTokenValid(token, userDetails));
     }
-    
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+
+    @Test
+    void testGenerateToken_NullUsername() {
+        // Act & Assert
+        assertThrows(Exception.class, () -> {
+            jwtService.generateToken(null, "ADMIN");
+        });
     }
-    
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+
+    @Test
+    void testGenerateToken_EmptyRole() {
+        // Arrange
+        String username = "testUser";
+
+        // Act
+        String token = jwtService.generateToken(username, "");
+
+        // Assert
+        assertNotNull(token);
+        assertTrue(jwtService.isTokenValid(token, createUserDetails(username)));
     }
-    
-    public String extractRole(String token) {
-        return extractClaim(token, claims -> claims.get("role", String.class));
-    }
-    
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
-    
-    public boolean isTokenValid(String token) {
-        try {
-            return !extractExpiration(token).before(new Date());
-        } catch (Exception e) {
-            return false;
-        }
+
+    private UserDetails createUserDetails(String username) {
+        return User.builder()
+                .username(username)
+                .password("password")
+                .roles("TRAFFIC_CONTROLLER")
+                .build();
     }
 }
