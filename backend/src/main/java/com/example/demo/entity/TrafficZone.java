@@ -11,25 +11,17 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "traffic_zones")
 public class TrafficZone {
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long zoneId;
-    
     @Column(nullable = false)
     private String zoneName;
-    
     @Column(unique = true)
     private String zoneCode;
-    
     private String district;
-    
     @Enumerated(EnumType.STRING)
     private CongestionLevel currentCongestionLevel;
-    
     private Integer signalCycleSeconds;
     
-    public enum CongestionLevel {
-        LOW, MODERATE, HIGH, CRITICAL
-    }
+    public enum CongestionLevel { LOW, MODERATE, HIGH, CRITICAL }
 }

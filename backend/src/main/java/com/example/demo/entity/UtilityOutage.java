@@ -12,40 +12,25 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "utility_outages")
 public class UtilityOutage {
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long outageId;
-    
     @ManyToOne
     @JoinColumn(nullable = false)
     private UtilityGrid grid;
-    
     @Enumerated(EnumType.STRING)
     private UtilityGrid.GridType gridType;
-    
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private OutageType outageType;
-    
     private String affectedArea;
     private LocalDateTime startTime;
-    
     @Enumerated(EnumType.STRING)
     private OutageStatus status;
-    
     @Enumerated(EnumType.STRING)
     private Severity severity;
     
-    public enum OutageType {
-        PLANNED, UNPLANNED, EMERGENCY
-    }
-    
-    public enum OutageStatus {
-        ACTIVE, RESOLVED, RESTORED
-    }
-    
-    public enum Severity {
-        LOW, MEDIUM, HIGH, CRITICAL
-    }
+    public enum OutageType { PLANNED, UNPLANNED, EMERGENCY }
+    public enum OutageStatus { ACTIVE, RESOLVED, RESTORED }
+    public enum Severity { LOW, MEDIUM, HIGH, CRITICAL }
 }
