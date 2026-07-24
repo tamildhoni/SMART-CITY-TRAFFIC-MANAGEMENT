@@ -10,11 +10,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class IncidentDto {
+    
     @NotBlank(message = "Title is required")
     private String title;
+    
     private String incidentType;
+    
     private String severity;
+    
     @NotNull(message = "Zone ID is required")
     private Long zoneId;
+    
     private String description;
 }
