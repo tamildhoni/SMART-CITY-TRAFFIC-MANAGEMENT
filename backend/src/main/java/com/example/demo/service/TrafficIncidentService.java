@@ -73,6 +73,10 @@ public class TrafficIncidentService {
     public List<TrafficIncident> getAllEndpoint() {
         return incidentRepository.findAll();
     }
+
+    public List<TrafficIncident> getAllIncidents() {
+        return getAllEndpoint();
+    }
     
     public TrafficIncident getIncidentById(Long id) {
         return incidentRepository.findById(id)
@@ -100,6 +104,10 @@ public class TrafficIncidentService {
             throw new RuntimeException("Traffic incident not found with id: " + id);
         }
         incidentRepository.deleteById(id);
+    }
+
+    public void deleteIncident(Long id) {
+        deleteEndpoint(id);
     }
 }
 // package com.example.demo.service;

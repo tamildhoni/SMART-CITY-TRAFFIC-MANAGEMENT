@@ -28,6 +28,10 @@ public class TrafficIncidentController {
     public ResponseEntity<List<TrafficIncident>> getAllEndpoint() {
         return ResponseEntity.ok(trafficIncidentService.getAllEndpoint());
     }
+
+    public ResponseEntity<List<TrafficIncident>> getAllIncidents() {
+        return getAllEndpoint();
+    }
     
     @GetMapping("/{id}")
     public ResponseEntity<TrafficIncident> getIncidentById(@PathVariable Long id) {
@@ -56,6 +60,10 @@ public class TrafficIncidentController {
     public ResponseEntity<String> deleteEndpoint(@PathVariable Long id) {
         trafficIncidentService.deleteEndpoint(id);
         return ResponseEntity.ok("TrafficIncident deleted successfully.");
+    }
+
+    public ResponseEntity<String> deleteIncident(Long id) {
+        return deleteEndpoint(id);
     }
     
     @PutMapping("/{id}/dispatch")
