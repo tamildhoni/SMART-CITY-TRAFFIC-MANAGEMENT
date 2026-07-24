@@ -22,7 +22,7 @@ public class UtilityOutage {
     private UtilityGrid grid;
     
     @Enumerated(EnumType.STRING)
-    private GridType gridType;
+    private UtilityGrid.GridType gridType;
     
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -36,10 +36,6 @@ public class UtilityOutage {
     
     @Enumerated(EnumType.STRING)
     private Severity severity;
-    
-    public enum GridType {
-        ELECTRICITY, WATER, GAS, SEWAGE
-    }
     
     public enum OutageType {
         PLANNED, UNPLANNED, EMERGENCY
