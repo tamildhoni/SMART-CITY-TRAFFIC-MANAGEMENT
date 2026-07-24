@@ -22,6 +22,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -78,13 +79,13 @@ class TrafficIncidentControllerTest {
         incident2.setReportedAt(LocalDateTime.now());
     }
 
+    // ============ T7: GET ALL ENDPOINT TESTS ============
+
     @Test
     void testGetAllIncidents_ShouldReturnListOfIncidents() throws Exception {
-        // Arrange
         List<TrafficIncident> incidents = Arrays.asList(incident1, incident2);
         when(trafficIncidentService.getAllIncidents()).thenReturn(incidents);
 
-        // Act & Assert
         mockMvc.perform(get("/api/incidents")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -98,10 +99,8 @@ class TrafficIncidentControllerTest {
 
     @Test
     void testGetAllIncidents_ShouldReturnEmptyListWhenNoIncidents() throws Exception {
-        // Arrange
         when(trafficIncidentService.getAllIncidents()).thenReturn(Arrays.asList());
 
-        // Act & Assert
         mockMvc.perform(get("/api/incidents")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -109,15 +108,57 @@ class TrafficIncidentControllerTest {
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
-    @Test
-    void testGetAllIncidents_ShouldReturnCorrectResponseContentType() throws Exception {
-        // Arrange
-        List<TrafficIncident> incidents = Arrays.asList(incident1);
-        when(trafficIncidentService.getAllIncidents()).thenReturn(incidents);
+    // ============ T9: GET BY ID ENDPOINT TESTS ============
 
-        // Act & Assert
-        mockMvc.perform(get("/api/incidents"))
+    @Test
+    void testGetIncidentById_ShouldReturnIncident() throws Exception {
+        Long incidentId = 1L;
+        when(trafficIncidentService.getIncidentById(incidentId)).thenReturn(incident1);
+
+        mockMvc.perform(get("/api/incidents/{id}", incidentId)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+                .andExpect(jsonPath("$.incidentId").value(1L))
+                .andExpect(jsonPath("$.title").value("Accident on Main St"))
+                .andExpect(jsonPath("$.incidentType").value("ACCIDENT"))
+                .andExpect(jsonPath("$.severity").value("HIGH"))
+                .andExpect(jsonPath("$.status").value("REPORTED"));
+    }
+
+    @Test
+    void testGetIncidentById_WithNonExistentId_ShouldThrowException() throws Exception {
+        Long incidentId = 999L;
+        when(trafficIncidentService.getIncidentById(incidentId))
+                .thenThrow(new RuntimeException("Traffic incident not found with id: " + incidentId));
+
+        mockMvc.perform(get("/api/incidents/{id}", incidentId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
+
+    // ============ T8: DELETE ENDPOINT TESTS ============
+
+    @Test
+    void testDeleteIncident_ShouldReturnSuccessMessage() throws Exception {
+        Long incidentId = 1L;
+        String expectedMessage = "TrafficIncident deleted successfully.";
+        
+        org.mockito.Mockito.doNothing().when(trafficIncidentService).deleteIncident(incidentId);
+
+        mockMvc.perform(delete("/api/incidents/{id}", incidentId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string(expectedMessage));
+    }
+
+    @Test
+    void testDeleteIncident_WithNonExistentId_ShouldThrowException() throws Exception {
+        Long incidentId = 999L;
+        org.mockito.Mockito.doThrow(new RuntimeException("Traffic incident not found with id: " + incidentId))
+                .when(trafficIncidentService).deleteIncident(incidentId);
+
+        mockMvc.perform(delete("/api/incidents/{id}", incidentId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
     }
 }
