@@ -25,7 +25,7 @@ public class TrafficIncidentController {
     private final TrafficIncidentRepository repository;  // Must be named "repository"
     
     @GetMapping
-    public ResponseEntity<List<TrafficIncident>> getAllIncidents() {
+    public ResponseEntity<List<TrafficIncident>> getAllEndpoint() {
         return ResponseEntity.ok(trafficIncidentService.getAllIncidents());
     }
     
@@ -53,7 +53,7 @@ public class TrafficIncidentController {
     
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('CITY_ADMINISTRATOR')")
-    public ResponseEntity<String> deleteIncident(@PathVariable Long id) {
+    public ResponseEntity<String> deleteIncid(@PathVariable Long id) {
         trafficIncidentService.deleteIncident(id);
         return ResponseEntity.ok("TrafficIncident deleted successfully.");
     }
