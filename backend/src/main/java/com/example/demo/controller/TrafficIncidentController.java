@@ -26,7 +26,7 @@ public class TrafficIncidentController {
     
     @GetMapping
     public ResponseEntity<List<TrafficIncident>> getAllEndpoint() {
-        return ResponseEntity.ok(trafficIncidentService.getAllIncidents());
+        return ResponseEntity.ok(trafficIncidentService.getAllEndpoint());
     }
     
     @GetMapping("/{id}")
@@ -53,8 +53,8 @@ public class TrafficIncidentController {
     
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('CITY_ADMINISTRATOR')")
-    public ResponseEntity<String> deleteIncid(@PathVariable Long id) {
-        trafficIncidentService.deleteIncident(id);
+    public ResponseEntity<String> deleteEndpoint(@PathVariable Long id) {
+        trafficIncidentService.deleteEndpoint(id);
         return ResponseEntity.ok("TrafficIncident deleted successfully.");
     }
     

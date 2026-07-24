@@ -70,7 +70,7 @@ public class TrafficIncidentService {
         return incidentRepository.save(incident);
     }
     
-    public List<TrafficIncident> getAllIncidents() {
+    public List<TrafficIncident> getAllEndpoint() {
         return incidentRepository.findAll();
     }
     
