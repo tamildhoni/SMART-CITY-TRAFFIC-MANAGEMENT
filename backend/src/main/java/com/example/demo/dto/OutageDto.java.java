@@ -9,17 +9,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OutageDto {
-    
     private String outageType;
-    
     private String gridType;
-    
     private String severity;
-    
     @NotNull(message = "Grid ID is required")
     private Long gridId;
-    
     private String affectedArea;
-    
     private String description;
 }
