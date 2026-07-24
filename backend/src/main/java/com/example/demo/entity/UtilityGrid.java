@@ -1,9 +1,9 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 @Entity
 @Table(name = "utility_grids")
 public class UtilityGrid {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long gridId;
@@ -29,10 +30,10 @@ public class UtilityGrid {
     private Double currentLoad = 0.0;
     
     @Enumerated(EnumType.STRING)
-    private GridStatus status = GridStatus.OPERATIONAL;
+    private GridStatus status;
     
     public enum GridType {
-        ELECTRICITY, WATER, GAS, SEWAGE, TELECOM
+        ELECTRICITY, WATER, GAS, SEWAGE
     }
     
     public enum GridStatus {

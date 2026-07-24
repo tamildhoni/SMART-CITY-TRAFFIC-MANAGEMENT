@@ -1,9 +1,9 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 @Entity
 @Table(name = "alert_notifications")
 public class AlertNotification {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long alertId;
@@ -24,9 +25,13 @@ public class AlertNotification {
     private String relatedEntityType;
     private Long relatedEntityId;
     
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TrafficIncident.Severity severity;
+    @Enumerated(EnumType.STRING)
+    private Severity severity;
     
     private boolean isRead = false;
+    
+    public enum Severity {
+        LOW, MEDIUM, HIGH, CRITICAL
+    }
 }
