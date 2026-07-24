@@ -1,67 +1,76 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.IncidentDto;
 import com.example.demo.entity.*;
+import com.example.demo.repository.AlertNotificationRepository;
 import com.example.demo.repository.TrafficIncidentRepository;
 import com.example.demo.repository.TrafficZoneRepository;
 import com.example.demo.repository.CityUserRepository;
-import com.example.demo.repository.AlertNotificationRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 @Transactional
 public class TrafficIncidentService {
+    
     private final TrafficIncidentRepository incidentRepository;
     private final TrafficZoneRepository zoneRepository;
     private final CityUserRepository userRepository;
     private final AlertNotificationRepository alertRepository;
     
-    public TrafficIncidentService(TrafficIncidentRepository incidentRepository,
-                                  TrafficZoneRepository zoneRepository,
-                                  CityUserRepository userRepository,
-                                  AlertNotificationRepository alertRepository) {
-        this.incidentRepository = incidentRepository;
-        this.zoneRepository = zoneRepository;
-        this.userRepository = userRepository;
-        this.alertRepository = alertRepository;
-    }
-    
-    public TrafficIncident reportIncident(TrafficIncident incident, String username) {
-        TrafficZone zone = zoneRepository.findById(incident.getZone().getZoneId())
-                .orElseThrow(() -> new RuntimeException("Zone not found"));
+    public TrafficIncident reportIncident(IncidentDto dto, String username) {
+        // Validate and get zone
+        TrafficZone zone = zoneRepository.findById(dto.getZoneId())
+            .orElseThrow(() -> new RuntimeException("Traffic zone not found with id: " + dto.getZoneId()));
         
+        // Get reporter
         CityUser reporter = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("User not found: " + username));
         
+        // Create new incident
+        TrafficIncident incident = new TrafficIncident();
+        incident.setTitle(dto.getTitle());
+        incident.setIncidentType(TrafficIncident.IncidentType.valueOf(dto.getIncidentType()));
+        incident.setSeverity(TrafficIncident.Severity.valueOf(dto.getSeverity()));
         incident.setZone(zone);
         incident.setReportedBy(reporter);
         incident.setStatus(TrafficIncident.IncidentStatus.REPORTED);
+        incident.setReportedAt(LocalDateTime.now());
+        incident.setDescription(dto.getDescription());
         
-        TrafficIncident saved = incidentRepository.save(incident);
+        // Save incident
+        TrafficIncident savedIncident = incidentRepository.save(incident);
         
         // Create alert for HIGH or CRITICAL severity
-        if (incident.getSeverity() == TrafficIncident.Severity.HIGH || 
-            incident.getSeverity() == TrafficIncident.Severity.CRITICAL) {
+        if (savedIncident.getSeverity() == TrafficIncident.Severity.HIGH || 
+            savedIncident.getSeverity() == TrafficIncident.Severity.CRITICAL) {
+            
             AlertNotification alert = new AlertNotification();
             alert.setTargetRole(Role.TRAFFIC_CONTROLLER);
-            alert.setMessage("High severity incident reported: " + incident.getTitle());
+            alert.setMessage("High severity incident reported: " + savedIncident.getTitle());
             alert.setRelatedEntityType("TrafficIncident");
-            alert.setRelatedEntityId(incident.getIncidentId());
-            alert.setSeverity(incident.getSeverity());
+            alert.setRelatedEntityId(savedIncident.getIncidentId());
+            // IMPORTANT: Convert TrafficIncident.Severity to AlertNotification.Severity
+            alert.setSeverity(AlertNotification.Severity.valueOf(savedIncident.getSeverity().name()));
+            
             alertRepository.save(alert);
         }
         
-        return saved;
+        return savedIncident;
     }
     
     public TrafficIncident dispatchResponse(Long id) {
         TrafficIncident incident = incidentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Incident not found"));
+            .orElseThrow(() -> new RuntimeException("Traffic incident not found with id: " + id));
         
+        // Validate state transition
         if (incident.getStatus() != TrafficIncident.IncidentStatus.REPORTED) {
-            throw new IllegalStateException("Incident must be in REPORTED state to dispatch");
+            throw new IllegalStateException("Incident must be in REPORTED state to dispatch. Current status: " + incident.getStatus());
         }
         
         incident.setStatus(TrafficIncident.IncidentStatus.DISPATCHED);
@@ -74,26 +83,32 @@ public class TrafficIncidentService {
     
     public TrafficIncident getIncidentById(Long id) {
         return incidentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TrafficIncident not found"));
+            .orElseThrow(() -> new RuntimeException("Traffic incident not found with id: " + id));
     }
     
-    public TrafficIncident updateIncident(Long id, TrafficIncident incidentDetails) {
-        TrafficIncident incident = getIncidentById(id);
-        incident.setTitle(incidentDetails.getTitle());
-        incident.setIncidentType(incidentDetails.getIncidentType());
-        incident.setSeverity(incidentDetails.getSeverity());
-        incident.setDescription(incidentDetails.getDescription());
+    public TrafficIncident updateIncident(Long id, IncidentDto dto) {
+        // Find existing incident
+        TrafficIncident incident = incidentRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Traffic incident not found with id: " + id));
         
-        if (incidentDetails.getZone() != null && incidentDetails.getZone().getZoneId() != null) {
-            TrafficZone zone = zoneRepository.findById(incidentDetails.getZone().getZoneId())
-                    .orElseThrow(() -> new RuntimeException("Zone not found"));
-            incident.setZone(zone);
-        }
+        // Validate and get zone
+        TrafficZone zone = zoneRepository.findById(dto.getZoneId())
+            .orElseThrow(() -> new RuntimeException("Traffic zone not found with id: " + dto.getZoneId()));
+        
+        // Update fields
+        incident.setTitle(dto.getTitle());
+        incident.setIncidentType(TrafficIncident.IncidentType.valueOf(dto.getIncidentType()));
+        incident.setSeverity(TrafficIncident.Severity.valueOf(dto.getSeverity()));
+        incident.setZone(zone);
+        incident.setDescription(dto.getDescription());
         
         return incidentRepository.save(incident);
     }
     
     public void deleteIncident(Long id) {
+        if (!incidentRepository.existsById(id)) {
+            throw new RuntimeException("Traffic incident not found with id: " + id);
+        }
         incidentRepository.deleteById(id);
     }
 }
