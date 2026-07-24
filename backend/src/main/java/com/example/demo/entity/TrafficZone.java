@@ -1,9 +1,9 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 @Entity
 @Table(name = "traffic_zones")
 public class TrafficZone {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long zoneId;
@@ -18,13 +19,15 @@ public class TrafficZone {
     @Column(nullable = false)
     private String zoneName;
     
+    @Column(unique = true)
     private String zoneCode;
+    
     private String district;
     
     @Enumerated(EnumType.STRING)
-    private CongestionLevel currentCongestionLevel = CongestionLevel.LOW;
+    private CongestionLevel currentCongestionLevel;
     
-    private Integer signalCycleSeconds = 60;
+    private Integer signalCycleSeconds;
     
     public enum CongestionLevel {
         LOW, MODERATE, HIGH, CRITICAL

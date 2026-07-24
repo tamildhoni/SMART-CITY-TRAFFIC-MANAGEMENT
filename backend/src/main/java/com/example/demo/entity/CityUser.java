@@ -1,9 +1,9 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 @Entity
 @Table(name = "city_users")
 public class CityUser {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
@@ -21,8 +22,8 @@ public class CityUser {
     @Column(nullable = false)
     private String passwordHash;
     
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Role role;
     
     private String fullName;

@@ -1,9 +1,9 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "traffic_incidents")
 public class TrafficIncident {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long incidentId;
@@ -25,24 +26,23 @@ public class TrafficIncident {
     @Enumerated(EnumType.STRING)
     private Severity severity;
     
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private IncidentStatus status = IncidentStatus.REPORTED;
+    @Enumerated(EnumType.STRING)
+    private IncidentStatus status;
     
     @ManyToOne
     @JoinColumn(nullable = false)
     private TrafficZone zone;
     
-    private LocalDateTime reportedAt = LocalDateTime.now();
+    private LocalDateTime reportedAt;
     
     @ManyToOne
-    @JoinColumn
     private CityUser reportedBy;
     
     private String description;
     
     public enum IncidentType {
-        ACCIDENT, ROAD_CLOSURE, TRAFFIC_JAM, CONSTRUCTION, WEATHER, OTHER
+        ACCIDENT, TRAFFIC_JAM, ROAD_CLOSURE, CONSTRUCTION, OTHER
     }
     
     public enum Severity {
