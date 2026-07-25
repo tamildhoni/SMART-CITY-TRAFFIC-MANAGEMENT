@@ -9,12 +9,12 @@ import java.util.List;
 @Repository
 public interface FieldObservationRepository extends JpaRepository<FieldObservation, Long> {
     
-    // FIXED: zone is a String, so use findByZone
+    // Since zone is a String in FieldObservation entity
     List<FieldObservation> findByZone(String zone);
     
     // Optional: search by zone containing text (partial match)
     List<FieldObservation> findByZoneContaining(String zone);
     
-    // This one is correct - reportedBy is a CityUser entity with userId
+    // reportedBy is a CityUser entity with userId
     List<FieldObservation> findByReportedBy_UserId(Long userId);
 }
