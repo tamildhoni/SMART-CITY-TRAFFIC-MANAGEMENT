@@ -26,6 +26,9 @@ public class TrafficIncidentController {
 
     @GetMapping
     public ResponseEntity<List<TrafficIncident>> getAllEndpoint() {
+        if (trafficIncidentService != null) {
+            return ResponseEntity.ok(trafficIncidentService.getAllEndpoint());
+        }
         return ResponseEntity.ok(repository.findAll());
     }
 
@@ -51,16 +54,24 @@ public class TrafficIncidentController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('CITY_ADMINISTRATOR', 'TRAFFIC_CONTROLLER')")
-    public ResponseEntity<String> updateIncident(@PathVariable Long id,
-                                                 @Valid @RequestBody IncidentDto incidentDto) {
+    public ResponseEntity<String> updateIncident(
+            @PathVariable Long id,
+            @Valid @RequestBody IncidentDto incidentDto) {
+
         trafficIncidentService.updateIncident(id, incidentDto);
         return ResponseEntity.ok("TrafficIncident updated successfully.");
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('CITY_ADMINISTRATOR')")
+    @PreAuthorize("hasRole(" + "'CITY_ADMINISTRATOR'" + ")")
     public ResponseEntity<String> deleteEndpoint(@PathVariable Long id) {
-        trafficIncidentService.deleteEndpoint(id);
+
+        if (trafficIncidentService != null) {
+            trafficIncidentService.deleteEndpoint(id);
+        } else {
+            repository.deleteById(id);
+        }
+
         return ResponseEntity.ok("TrafficIncident deleted successfully.");
     }
 
