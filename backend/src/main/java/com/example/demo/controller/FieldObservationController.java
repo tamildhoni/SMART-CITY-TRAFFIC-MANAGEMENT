@@ -8,8 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -39,20 +41,25 @@ public class FieldObservationController {
         return ResponseEntity.ok(observation);
     }
     
-    @GetMapping("/zone/{zoneId}")
-    public ResponseEntity<List<FieldObservation>> getObservationsByZone(@PathVariable Long zoneId) {
-        List<FieldObservation> observations = observationRepository.findByZone_ZoneId(zoneId);
+    // FIXED: Changed from zoneId (Long) to zone (String)
+    @GetMapping("/zone/{zone}")
+    public ResponseEntity<List<FieldObservation>> getObservationsByZone(@PathVariable String zone) {
+        List<FieldObservation> observations = observationRepository.findByZone(zone);
         return ResponseEntity.ok(observations);
     }
     
     @PostMapping
     @PreAuthorize("hasAnyRole('FIELD_TECHNICIAN', 'TRAFFIC_CONTROLLER', 'CITY_ADMINISTRATOR')")
-    public ResponseEntity<FieldObservation> createObservation(@RequestBody FieldObservation observation, 
-                                                              Authentication authentication) {
+    public ResponseEntity<FieldObservation> createObservation(@RequestBody FieldObservation observation) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
+        
         CityUser user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        
         observation.setReportedBy(user);
+        observation.setReportedAt(LocalDateTime.now());
+        
         FieldObservation created = observationRepository.save(observation);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -77,6 +84,9 @@ public class FieldObservationController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('CITY_ADMINISTRATOR', 'FIELD_TECHNICIAN')")
     public ResponseEntity<String> deleteObservation(@PathVariable Long id) {
+        if (!observationRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
         observationRepository.deleteById(id);
         return ResponseEntity.ok("FieldObservation deleted successfully");
     }
